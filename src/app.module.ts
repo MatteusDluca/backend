@@ -19,6 +19,7 @@ import { EventCategoriesModule } from './event-categories/event-categories.modul
 
 import { LocationsModule } from './locations/locations.module'
 import { EventsModule } from './events/events.module'
+import { ContractsModule } from './contract/contract.module'
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { EventsModule } from './events/events.module'
     EventCategoriesModule,
     EventsModule,
     LocationsModule,
+    ContractsModule,
   ],
   providers: [UploadService, ClientsService, CategoriesService],
   controllers: [ClientsController, CategoriesController],

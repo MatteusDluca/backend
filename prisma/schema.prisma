@@ -54,6 +54,7 @@ model Client {
   measurements    Measurements? @relation(fields: [measurementsId], references: [id])
 
   @@map("clients")
+  Contract Contract[]
 }
 
 model Measurements {
@@ -178,6 +179,7 @@ model Product {
   updatedAt   DateTime      @updatedAt
 
   @@map("products")
+  ContractItem ContractItem[]
 }
 
 // Enum para status de EventCategory
@@ -210,6 +212,7 @@ model Event {
   updatedAt       DateTime      @updatedAt
 
   @@map("events")
+  Contract Contract[]
 }
 
 // Modelo Location
@@ -222,4 +225,76 @@ model Location {
   updatedAt DateTime  @updatedAt
 
   @@map("locations")
+  Contract Contract[]
+}
+
+enum ContractStatus {
+  ACTIVE      // Ativo
+  CANCELED    // Cancelado
+  IN_PROGRESS // Em andamento
+  COMPLETED   // Concluído
+}
+
+enum PaymentMethod {
+  PIX          // PIX
+  CREDIT_CARD  // Cartão de crédito
+  DEBIT_CARD   // Cartão de débito
+  CASH         // Dinheiro
+}
+
+enum DiscountType {
+  PERCENTAGE  // Porcentagem
+  FIXED       // Valor fixo
+}
+
+model Contract {
+  id              String         @id @default(uuid())
+  clientId        String
+  client          Client         @relation(fields: [clientId], references: [id])
+  eventId         String?
+  event           Event?         @relation(fields: [eventId], references: [id])
+  locationId      String?
+  location        Location?      @relation(fields: [locationId], references: [id])
+  status          ContractStatus @default(ACTIVE)
+  fittingDate     DateTime?      // Data da prova
+  pickupDate      DateTime       // Data da retirada
+  returnDate      DateTime       // Data da devolução
+  needsAdjustment Boolean        @default(false) // Foi necessário ajustes
+  observations    String?
+  items           ContractItem[]
+  payments        Payment[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@map("contracts")
+}
+
+model ContractItem {
+  id         String   @id @default(uuid())
+  contractId String
+  contract   Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Int
+  unitValue  Float    // Valor unitário do produto
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("contract_items")
+}
+
+model Payment {
+  id           String        @id @default(uuid())
+  contractId   String
+  contract     Contract      @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  method       PaymentMethod
+  totalValue   Float         // Valor total sem desconto
+  discountType DiscountType? // Tipo de desconto (percentual ou fixo)
+  discountValue Float?       // Valor do desconto
+  finalValue   Float         // Valor final com desconto aplicado
+  notes        String?       // Observações sobre o pagamento
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("payments")
 }
