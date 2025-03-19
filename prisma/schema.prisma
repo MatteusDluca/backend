@@ -1,0 +1,225 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+        
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model Employee {
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  cpf             String    @unique
+  password        String
+  salary          Float
+  phone           String    @unique
+  birthday        String?
+  workHours       String
+  imageUrl        String?   
+  role            Role      @default(USER)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  addressId       String?
+  address         Address?  @relation(fields: [addressId], references: [id])
+
+  @@map("employees")
+}
+
+model Client {
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  phone           String    @unique
+  cpfCnpj         String    @unique @map("cpf_cnpj")
+  instagram       String?
+  imageUrl        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  addressId       String?
+  address         Address?  @relation(fields: [addressId], references: [id])
+  measurementsId  String?   @unique
+  measurements    Measurements? @relation(fields: [measurementsId], references: [id])
+
+  @@map("clients")
+}
+
+model Measurements {
+  id                      String  @id @default(uuid())
+  shoulder                Float?  // Ombro
+  bust                    Float?  // Busto
+  shoulderToWaistLength   Float?  // Comprimento do corpo do ombro até a cintura
+  shoulderToCosLength     Float?  // Comprimento do corpo do ombro até cos
+  tqcLength               Float?  // Comprimento do corpo t.q.c.
+  waist                   Float?  // Cintura
+  cos                     Float?  // Cos
+  hip                     Float?  // Quadril
+  shortSkirtLength        Float?  // Comprimento da saia curta
+  longSkirtLength         Float?  // Comprimento da saia longa
+  shortLength             Float?  // Comprimento do short
+  pantsLength             Float?  // Comprimento da calça
+  dressLength             Float?  // Comprimento do vestido
+  sleeveLength            Float?  // Comprimento da manga
+  wrist                   Float?  // Punho
+  frontMeasure            Float?  // Medida frente
+  shoulderToShoulderWidth Float?  // Medida Ombro a ombro
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  client                  Client?
+
+  @@map("measurements")
+}
+
+
+
+model Address {
+  id        String     @id @default(uuid())
+  streetId  String
+  street    Street     @relation(fields: [streetId], references: [id])
+  number    String
+  complement String?
+  zipCode   String
+  cityId    String
+  city      City       @relation(fields: [cityId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  employees Employee[]
+
+  @@map("addresses")
+  Client Client[]
+  Location Location[]
+}
+
+model Street {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  addresses Address[]
+
+  @@map("streets")
+}
+
+model City {
+  id        String    @id @default(uuid())
+  name      String
+  stateId   String
+  state     State     @relation(fields: [stateId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  addresses Address[]
+
+  @@unique([name, stateId])
+  @@map("cities")
+}
+
+model State {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  uf        String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  cities    City[]
+
+  @@map("states")
+}
+
+// Adicionar ao final do arquivo schema.prisma
+
+enum ProductStatus {
+  AVAILABLE     // Disponível
+  RENTED        // Alugado
+  MAINTENANCE   // Em conserto
+  DISABLED      // Desativado
+}
+
+enum CategoryStatus {
+  ACTIVE
+  DISABLED
+}
+
+model Category {
+  id          String         @id @default(uuid())
+  name        String         @unique
+  status      CategoryStatus @default(ACTIVE)
+  imageUrl    String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  products    Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String        @id @default(uuid())
+  name        String
+  code        String        @unique
+  status      ProductStatus @default(AVAILABLE)
+  size        String
+  quantity    Int
+  description String?
+  imageUrl    String?
+  rentalValue Float
+  categoryId  String?
+  category    Category?     @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("products")
+}
+
+// Enum para status de EventCategory
+enum EventCategoryStatus {
+  ACTIVE
+  DISABLED
+}
+
+// Modelo EventCategory
+model EventCategory {
+  id        String             @id @default(uuid())
+  name      String             @unique
+  status    EventCategoryStatus @default(ACTIVE)
+  events    Event[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@map("event_categories")
+}
+
+// Modelo Event
+model Event {
+  id              String        @id @default(uuid())
+  name            String
+  date            String?
+  time            String?
+  eventCategoryId String?
+  eventCategory   EventCategory? @relation(fields: [eventCategoryId], references: [id])
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("events")
+}
+
+// Modelo Location
+model Location {
+  id        String    @id @default(uuid())
+  name      String
+  addressId String?
+  address   Address?  @relation(fields: [addressId], references: [id])
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("locations")
+}
