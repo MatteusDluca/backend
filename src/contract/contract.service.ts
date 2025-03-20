@@ -681,6 +681,8 @@ import {
   
     /**
      * Gera um PDF com a lista de todos os contratos
+     * CORREÇÃO: Este método foi modificado para retornar diretamente a URL do arquivo
+     * em vez de uma Promise, para compatibilidade com a API
      */
     async generateContractsPdf() {
       // @ts-ignore
@@ -742,18 +744,19 @@ import {
       doc.text(`Concluídos: ${statusCounts.COMPLETED}`);
       doc.moveDown(1);
   
-      // Tabela de contratos
-      doc.fontSize(12).font('Helvetica-Bold');
-      doc.text('ID', 50, 200);
-      doc.text('Cliente', 100, 200);
-      doc.text('Status', 250, 200);
-      doc.text('Retirada', 320, 200);
-      doc.text('Devolução', 400, 200);
-      doc.text('Total', 480, 200);
-      
-      // Linha separadora
-      doc.moveTo(50, 220).lineTo(550, 220).stroke();
-      doc.font('Helvetica');
+      // Tabela de contratos - posicionamento ajustado
+    doc.fontSize(12).font('Helvetica-Bold');
+    const colPositions = [50, 150, 280, 360, 440, 520]; // Posições ajustadas das colunas
+    doc.text('ID', colPositions[0], 200);
+    doc.text('Cliente', colPositions[1], 200);
+    doc.text('Status', colPositions[2], 200);
+    doc.text('Retirada', colPositions[3], 200);
+    doc.text('Devolução', colPositions[4], 200);
+    doc.text('Total', colPositions[5], 200);
+
+    // Linha separadora
+    doc.moveTo(50, 220).lineTo(570, 220).stroke();
+    doc.font('Helvetica');
   
       let yPosition = 230;
   
@@ -806,21 +809,21 @@ import {
         };
   
         // Adicionar linha do contrato
-        doc.text(shortId, 50, yPosition);
-        doc.text(contract.client.name.substring(0, 20), 100, yPosition);
-        doc.text(translateStatus(contract.status), 250, yPosition);
-        doc.text(formatDate(contract.pickupDate), 320, yPosition);
-        doc.text(formatDate(contract.returnDate), 400, yPosition);
-        doc.text(`R$ ${totalValue.toFixed(2)}`, 480, yPosition);
+        doc.text(shortId, colPositions[0], yPosition);
+        doc.text(contract.client.name.substring(0, 20), colPositions[1], yPosition);
+        doc.text(translateStatus(contract.status), colPositions[2], yPosition);
+        doc.text(formatDate(contract.pickupDate), colPositions[3], yPosition);
+        doc.text(formatDate(contract.returnDate), colPositions[4], yPosition);
+        doc.text(`R$ ${totalValue.toFixed(2)}`, colPositions[5], yPosition);
   
         // Mover para a próxima linha
-        yPosition += 20;
+        yPosition += 30;
       }
   
       // Finalizar o documento
       doc.end();
   
-      // Aguardar a finalização da escrita
+      // Retornar a URL do arquivo após finalizar a escrita
       return new Promise<string>((resolve, reject) => {
         writeStream.on('finish', () => {
           const fileUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/uploads/${fileName}`;
@@ -918,10 +921,8 @@ import {
         doc.moveDown(1.5);
       }
   
-      // Continuação do código de src/contracts/contracts.service.ts
-
-    // Informações do local, se houver
-    if (contract.location) {
+      // Informações do local, se houver
+      if (contract.location) {
         doc.fontSize(14).font('Helvetica-Bold').text('LOCAL:');
         doc.moveDown(0.5);
         doc.fontSize(12).font('Helvetica');
