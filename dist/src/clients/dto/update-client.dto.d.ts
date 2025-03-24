@@ -1,0 +1,31 @@
+export declare class UpdateClientDto {
+    name?: string;
+    email?: string;
+    phone?: string;
+    cpfCnpj?: string;
+    instagram?: string;
+    imageUrl?: string;
+    street?: string;
+    number?: string;
+    complement?: string;
+    zipCode?: string;
+    city?: string;
+    state?: string;
+    shoulder?: number;
+    bust?: number;
+    shoulderToWaistLength?: number;
+    shoulderToCosLength?: number;
+    tqcLength?: number;
+    waist?: number;
+    cos?: number;
+    hip?: number;
+    shortSkirtLength?: number;
+    longSkirtLength?: number;
+    shortLength?: number;
+    pantsLength?: number;
+    dressLength?: number;
+    sleeveLength?: number;
+    wrist?: number;
+    frontMeasure?: number;
+    shoulderToShoulderWidth?: number;
+}
